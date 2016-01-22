@@ -6,7 +6,9 @@ def readmesh(mesh_file):
     # TODO: exceptions, files exist?
     from dolfin import Mesh, MeshFunction, CellFunction, HDF5File, \
         FacetFunction
-    mesh_name, mesh_type = mesh_file.split('.')
+    tmp = mesh_file.split('/')[-1].split('.')
+    mesh_type = tmp[-1]
+    mesh_name = tmp[0:-1]
     if mesh_type == 'xml':
         mesh = Mesh(mesh_file)
         try:
