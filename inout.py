@@ -8,7 +8,7 @@ def readmesh(mesh_file):
         FacetFunction
     tmp = mesh_file.split('/')[-1].split('.')
     mesh_type = tmp[-1]
-    mesh_name = tmp[0:-1]
+    mesh_name = '.'.join(tmp[0:-1])
     if mesh_type == 'xml':
         mesh = Mesh(mesh_file)
         try:
