@@ -71,6 +71,8 @@ def prms_print(prms):
     print("Numerics")
     for key, val in prms['num'].items():
         print("\t%s: %s" % (key, str(val)))
+    """ TODO: run every header only if exist
     print("Physics")
     for key, val in prms['phys'].items():
         print("\t%s: %s" % (key, str(val)))
+    """
