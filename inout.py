@@ -6,28 +6,31 @@ def readmesh(mesh_file):
     # TODO: exceptions, files exist?
     from dolfin import Mesh, MeshFunction, CellFunction, HDF5File, \
         FacetFunction
-    tmp = mesh_file.split('/')[-1].split('.')
+    # pth = '/'.join(mesh_file.split('/')[0:-1])
+    tmp = mesh_file.split('.')  # [-1].split('.')
     mesh_type = tmp[-1]
-    mesh_name = '.'.join(tmp[0:-1])
+    mesh_pref = '.'.join(tmp[0:-1])
+
     if mesh_type == 'xml':
         mesh = Mesh(mesh_file)
         rank = mesh.mpi_comm().Get_rank()
         try:
             subdomains = MeshFunction("size_t", mesh,
-                                      mesh_name+"_physical_region.xml")
+                                      mesh_pref+"_physical_region.xml")
         except:
             if rank == 0:
                 print('no subdomain file found (%s)' %
-                      (mesh_name+"_physical_region.xml"))
+                      (mesh_pref+"_physical_region.xml"))
             subdomains = CellFunction("size_t", mesh)
         try:
             boundaries = MeshFunction("size_t", mesh,
-                                      mesh_name+"_facet_region.xml")
+                                      mesh_pref+"_facet_region.xml")
         except:
             if rank == 0:
                 print('no boundary file found (%s)' %
-                      (mesh_name+"_facet_region.xml"))
+                      (mesh_pref+"_facet_region.xml"))
             boundaries = FacetFunction("size_t", mesh)
+
     elif mesh_type == 'h5':
         mesh = Mesh()
         rank = mesh.mpi_comm().Get_rank()
