@@ -40,16 +40,16 @@ def readmesh(mesh_file):
         boundaries = FacetFunction("size_t", mesh)
         if hdf.has_dataset('subdomains'):
             hdf.read(subdomains, "/subdomains")
-        else:
-            if rank == 0:
-                print('no <subdomains> datasets found in file %s' %
-                      mesh_file)
-        if hdf.has_dataset('boundaries'):
-            hdf.read(boundaries, "/boundaries")
         # else:
         #     if rank == 0:
-        #         print('no <boundaries> datasets found in file %s' %
+        #         print('no <subdomains> datasets found in file %s' %
         #               mesh_file)
+        if hdf.has_dataset('boundaries'):
+            hdf.read(boundaries, "/boundaries")
+        else:
+            if rank == 0:
+                print('no <boundaries> datasets found in file %s' %
+                      mesh_file)
 
     elif mesh_type in ['xdmf', 'xmf']:
         import sys
