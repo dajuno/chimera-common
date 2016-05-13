@@ -18,9 +18,9 @@ def readmesh(mesh_file):
             subdomains = MeshFunction("size_t", mesh,
                                       mesh_pref+"_physical_region.xml")
         except:
-            if rank == 0:
-                print('no subdomain file found (%s)' %
-                      (mesh_pref+"_physical_region.xml"))
+            # if rank == 0:
+            #     print('no subdomain file found (%s)' %
+            #           (mesh_pref+"_physical_region.xml"))
             subdomains = CellFunction("size_t", mesh)
         try:
             boundaries = MeshFunction("size_t", mesh,
@@ -42,12 +42,14 @@ def readmesh(mesh_file):
             hdf.read(subdomains, "/subdomains")
         else:
             if rank == 0:
-                print('no <subdomains> datasets found in file %s' % mesh_file)
+                print('no <subdomains> datasets found in file %s' %
+                      mesh_file)
         if hdf.has_dataset('boundaries'):
             hdf.read(boundaries, "/boundaries")
-        else:
-            if rank == 0:
-                print('no <boundaries> datasets found in file %s' % mesh_file)
+        # else:
+        #     if rank == 0:
+        #         print('no <boundaries> datasets found in file %s' %
+        #               mesh_file)
 
     elif mesh_type in ['xdmf', 'xmf']:
         import sys
