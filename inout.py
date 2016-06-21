@@ -1,7 +1,7 @@
 ''' input/output module '''
 
 
-def readmesh(mesh_file):
+def read_mesh(mesh_file):
     ''' read HDF5 or DOLFIN XML mesh '''
     # TODO: exceptions, files exist?
     from dolfin import Mesh, MeshFunction, CellFunction, HDF5File, \
@@ -63,7 +63,17 @@ def readmesh(mesh_file):
     return mesh, subdomains, boundaries
 
 
+def readmesh(mesh_file):
+    ''' Deprecated function. Use read_mesh instead.'''
+    raise Exception('readmesh was renamed to read_mesh (PEP8 conforming).')
+
+
 def prms_load(infile):
+    ''' Deprecated function. Use read_parameters instead.'''
+    raise Exception('prms_load was renamed to read_parameters (PEP8 '
+                    'conforming).')
+
+def read_paramenters(infile):
     import yaml
     try:
         with open(infile, 'r+') as f:
@@ -76,6 +86,12 @@ def prms_load(infile):
 
 
 def prms_print(prms):
+    ''' Deprecated function. Use print_parameters instead.'''
+    raise Exception('prms_print was renamed to print_parameters (PEP8 '
+                    'conforming).')
+
+
+def print_parameters(prms):
     print("Output")
     for key, val in prms['io'].items():
         print("\t%s: %s" % (key, str(val)))
