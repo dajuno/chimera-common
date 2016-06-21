@@ -73,7 +73,8 @@ def prms_load(infile):
     raise Exception('prms_load was renamed to read_parameters (PEP8 '
                     'conforming).')
 
-def read_paramenters(infile):
+
+def read_parameters(infile):
     import yaml
     try:
         with open(infile, 'r+') as f:
