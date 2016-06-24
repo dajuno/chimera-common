@@ -14,7 +14,8 @@ def generate_mesh(prms):
     from dolfin import *
     import pygmsh as pg
     import numpy as np
-    from functions import utils
+    #from functions import utils
+    import utils
     import subprocess
 
     # Extract parameters
