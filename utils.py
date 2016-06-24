@@ -14,12 +14,14 @@ def on_cluster():
 def prep_mesh(mesh_file):
     if on_cluster():
         # running on NLHPC cluster
-        mfile = '/home/dnolte/fenics/nitsche/meshes/' + mesh_file
+        # TODO: UNTESTED CHANGE. Test this.
+        # mfile = '/home/dnolte/fenics/nitsche/meshes/' + mesh_file
+        mfile = shutil.os.getcwd() + '/' + mesh_file
         mesh = '/dev/shm/' + mesh_file
-        shutil.copy(mfile, '/dev/shm/')
+        shutil.copy(mfile, mesh)
     else:
         # running on local machine
-        mesh = 'meshes/' + mesh_file
+        mesh = mesh_file
 
     return mesh
 
