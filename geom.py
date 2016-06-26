@@ -96,12 +96,14 @@ class Bottom(SubDomain):
 
 class Corner(SubDomain):
     ''' Right lower corner of the mesh '''
-    def __init__(self, xl):
-        x0, x1 = xl
-        self.x0 = x0
-        self.x1 = x1
+    def __init__(self, xp):
+        self.xp = xp
         SubDomain.__init__(self)  # Call base class constructor!
 
     def inside(self, x, on_boundary):
         # don't require "on_boundary" here!
-        return near(x[0], self.x0) and near(x[1], self.x1)
+
+        ret = (near(x[0], self.xp[0]) and near(x[1], self.xp[1]) and
+               (near(x[2], self.xp[2]) if len(self.xp) == 3 else True))
+
+        return ret
