@@ -25,6 +25,7 @@ def generate_mesh(prms):
     desp    = float(prms['mesh']['desp'])
     sigma   = 2
     l_coarse = 0.5
+    l_unrefine		= 1 # mesh size in coarser parts of the mesh
     geom = pg.Geometry()
 
     X = [[0.0, 0.0, 0.0], [base + b*desp, 0.0, 0.0], [base + b*desp, altura + 2*a*desp, 0.0], [0.0, altura + 2*a*desp, 0.0]];
@@ -32,6 +33,7 @@ def generate_mesh(prms):
 
     # save array with local values of theta in order to create theta functions
     theta_c_array = np.empty((int(np.floor(base/b))*int(np.floor(altura/a)))); kkk = 0
+    theta_f_array = np.empty((int(np.floor(base/b))*int(np.floor(altura/a)))); 
 
     # ======== CREATE MESH =========
     # create collagen subdomains
@@ -45,7 +47,6 @@ def generate_mesh(prms):
               theta_c_local = abs(np.random.normal(0.0, sigma))
             while (theta_f_local < 0.4 or theta_f_local > 0.8):
               theta_f_local = abs(np.random.normal(0.0, sigma))
-
 
             Pxx, Pyy = float(Px*b - b*theta_f_local/2 + b*desp), float(Py*a - a*theta_c_local/2 + a*desp)
             x1 = [Pxx,        		        Pyy, 				        0.0];
@@ -78,13 +79,11 @@ def generate_mesh(prms):
             l3_label = geom.add_line_in_surface(l3_label, surface_id);
             l4_label = geom.add_line_in_surface(l4_label, surface_id);
 
-            theta_c_array[kkk] = theta_c_local; kkk = kkk + 1
+            theta_f_array[kkk], theta_c_array[kkk] = theta_f_local, theta_c_local; kkk = kkk + 1
 
-    print theta_c_array
     collagen_subdomain = collagen_subdomain + '}'
 
     # unrefine place where fine mesh is not required
-    l_unrefine		= 1 # mesh size in coarser parts of the mesh
     unrefine_points 	= 0.2*np.array(range(1, int(altura*5)))
     xx = desp - b*0.5 + b*np.array(range(1, int(base/b)))
 
@@ -99,18 +98,18 @@ def generate_mesh(prms):
     utils.trymkdir(prms['io']['results'])
     FILE = open("./fibro_file.geo", 'w+')
     FILE.write(geom.get_code()); FILE.close();
-    subprocess.call("cp ./functions/geo2h5.sh ./", shell=True)
-    subprocess.call("cp ./functions/xml2hdf5.py ./", shell=True)
-    subprocess.call("./geo2h5.sh" + " fibro_file " + out_name, shell=True)
-    subprocess.call("cp ./" + out_name + ".h5 ./meshes/", shell=True)
-    subprocess.call("rm ./geo2h5.sh ./xml2hdf5.py " + out_name + ".h5 fibro_file.geo", shell=True)
+    subprocess.call("cp ./functions/geo2h5.sh ./"                                       , shell=True)
+    subprocess.call("cp ./functions/xml2hdf5.py ./"                                     , shell=True)
+    subprocess.call("./geo2h5.sh" + " fibro_file " + out_name                           , shell=True)
+    subprocess.call("cp ./" + out_name + ".h5 ./meshes/"                                , shell=True)
+    subprocess.call("rm ./geo2h5.sh ./xml2hdf5.py " + out_name + ".h5 fibro_file.geo"   , shell=True)
 
     # ======== CREATE THETA FUNCTIONS =========
     from functions.inout import readmesh
     mesh, subdomains, boundaries = readmesh('./meshes/' + out_name + '.h5')
 
     V = FunctionSpace(mesh, 'CG', 1)
-    theta_c_function = Function(V); kkk = 0
+    theta_c_function, theta_f_function = Function(V), Function(V); kkk = 0
 
     # mesh dimension and dofmap
     gdim = mesh.geometry().dim()
@@ -121,11 +120,15 @@ def generate_mesh(prms):
 
     for Px in range(0, int(np.floor(base/b))):
         for Py in range(0, int(np.floor(altura/a))):
-            Pxx, Pyy = float(Px*b + b*desp - b/2), float(Py*a + a*desp - a/2)                            
+            Pxx, Pyy = float(Px*b + b*desp - b/2), float(Py*a + a*desp - a/2)
             for dof, dof_coor in zip(dofs, dofs_coor):
-                if (dof_coor[0] > Pxx or dof_coor[0] < Pxx + b) and (dof_coor[1] > Pyy or dof_coor[1] < Pyy + a):
-                    theta_c_function.vector()[dof] = theta_c_array[kkk]; kkk = kkk + 1
-                    plot(theta_c_function)
-                    interactive()
+                if (dof_coor[0] >= Pxx and dof_coor[0] < Pxx + b) and (dof_coor[1] >= Pyy and dof_coor[1] < Pyy + a):
+                    theta_c_function.vector()[dof], theta_f_function.vector()[dof] = theta_c_array[kkk], theta_f_array[kkk]
+            kkk = kkk + 1
 
-
+    # save theta functions to file
+    out_name = 'theta_functions_' + str(int(base)) + "x" + str(int(altura)) + "_" + str(int(a*10)) + "_" + str(int(b*10)) + '.h5'
+    hdf = HDF5File(mesh.mpi_comm(), "./meshes/" + out_name, "w")
+    hdf.write(theta_f_function, "/theta_f_function")
+    hdf.write(theta_c_function, "/theta_c_function")
+    hdf.close()
