@@ -35,7 +35,7 @@ def generate_mesh(prms):
     theta_c_array = np.empty((int(np.floor(base/b))*int(np.floor(altura/a)))); kkk = 0
     theta_f_array = np.empty((int(np.floor(base/b))*int(np.floor(altura/a)))); 
 
-    # ======== CREATE MESH =========
+    # ======== CREATE MESH FOR EXACT PROBLEM =========
     # create collagen subdomains
     collagen_subdomain, k = '{', 0
     for Px in range(0, int(np.floor(base/b))):
@@ -103,6 +103,10 @@ def generate_mesh(prms):
     subprocess.call("./geo2h5.sh" + " fibro_file " + out_name                           , shell=True)
     subprocess.call("cp ./" + out_name + ".h5 ./meshes/"                                , shell=True)
     subprocess.call("rm ./geo2h5.sh ./xml2hdf5.py " + out_name + ".h5 fibro_file.geo"   , shell=True)
+
+    # ======== CREATE MESH FOR HOMOGENIZED PROBLEM =========    
+    geom = pg.Geometry()
+
 
     # ======== CREATE THETA FUNCTIONS =========
     from functions.inout import readmesh
