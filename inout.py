@@ -71,14 +71,6 @@ def prms_load(infile):
 
 
 def prms_print(prms):
-    print("Output")
-    for key, val in prms['io'].items():
-        print("\t%s: %s" % (key, str(val)))
-    print("Numerics")
-    for key, val in prms['num'].items():
-        print("\t%s: %s" % (key, str(val)))
-    """ TODO: run every header only if exist
-    print("Physics")
-    for key, val in prms['phys'].items():
-        print("\t%s: %s" % (key, str(val)))
-    """
+    import yaml
+    print ' --- Simulation Parameters --- \n \n'
+    print(yaml.dump(prms))

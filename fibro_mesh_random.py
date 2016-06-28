@@ -106,9 +106,20 @@ def generate_mesh(prms):
 
     # ======== CREATE MESH FOR HOMOGENIZED PROBLEM =========    
     geom = pg.Geometry()
+    X = [[0.0, 0.0, 0.0], [base + b*desp, 0.0, 0.0], [base + b*desp, altura + 2*a*desp, 0.0], [0.0, altura + 2*a*desp, 0.0]];
+    surface_id = geom.add_polygon(X, l_coarse/5, holes=None)
+    geom.set_physical_objects_homo()
+    # Save mesh and convert to .h5 format
+    out_name = 'homogenized_' + str(int(base)) + "x" + str(int(altura))
+    FILE = open("./fibro_file.geo", 'w+')
+    FILE.write(geom.get_code()); FILE.close();
+    subprocess.call("cp ./functions/geo2h5.sh ./"                                       , shell=True)
+    subprocess.call("cp ./functions/xml2hdf5.py ./"                                     , shell=True)
+    subprocess.call("./geo2h5.sh" + " fibro_file " + out_name                           , shell=True)
+    subprocess.call("cp ./" + out_name + ".h5 ./meshes/"                                , shell=True)
+    subprocess.call("rm ./geo2h5.sh ./xml2hdf5.py " + out_name + ".h5 fibro_file.geo"   , shell=True)
 
-
-    # ======== CREATE THETA FUNCTIONS =========
+    # ======== CREATE THETA FUNCTIONS OVER HOMOGENIZED MESH =========
     from functions.inout import readmesh
     mesh, subdomains, boundaries = readmesh('./meshes/' + out_name + '.h5')
 
