@@ -2,7 +2,11 @@
 
 
 def read_mesh(mesh_file):
-    ''' read HDF5 or DOLFIN XML mesh '''
+    ''' Read HDF5 or DOLFIN XML mesh.
+
+    Args:
+        mesh_file       path to mesh file
+    '''
     # TODO: exceptions, files exist?
     from dolfin import Mesh, MeshFunction, CellFunction, HDF5File, \
         FacetFunction
@@ -75,6 +79,14 @@ def prms_load(infile):
 
 
 def read_parameters(infile):
+    ''' Read in parameters yaml file.
+
+    Args:
+        infile      path to yaml file
+
+    Return:
+        prms        parameters dictionary
+    '''
     import yaml
     try:
         with open(infile, 'r+') as f:
@@ -93,14 +105,10 @@ def prms_print(prms):
 
 
 def print_parameters(prms):
-    print("Output")
-    for key, val in prms['io'].items():
-        print("\t%s: %s" % (key, str(val)))
-    print("Numerics")
-    for key, val in prms['num'].items():
-        print("\t%s: %s" % (key, str(val)))
-    """ TODO: run every header only if exist
-    print("Physics")
-    for key, val in prms['phys'].items():
-        print("\t%s: %s" % (key, str(val)))
-    """
+    ''' Print parameter dictionary in human readable form.
+
+    Args:
+        prms        parameters dictionary
+    '''
+    import yaml
+    print(yaml.dump(prms))
