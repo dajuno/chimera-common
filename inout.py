@@ -11,7 +11,8 @@ def readmesh(mesh_file):
     mesh_name = '.'.join(tmp[0:-1])
     if mesh_type == 'xml':
         mesh = Mesh(mesh_file)
-        rank = mesh.mpi_comm().Get_rank()
+#        rank = mesh.mpi_comm().Get_rank()
+        rank = 0
         try:
             subdomains = MeshFunction("size_t", mesh,
                                       mesh_name+"_physical_region.xml")
@@ -30,7 +31,9 @@ def readmesh(mesh_file):
             boundaries = FacetFunction("size_t", mesh)
     elif mesh_type == 'h5':
         mesh = Mesh()
-        rank = mesh.mpi_comm().Get_rank()
+#        rank = mesh.mpi_comm().Get_rank()
+        rank = 0
+
         hdf = HDF5File(mesh.mpi_comm(), mesh_file, "r")
         hdf.read(mesh, "/mesh", False)
         subdomains = CellFunction("size_t", mesh)
@@ -72,5 +75,5 @@ def prms_load(infile):
 
 def prms_print(prms):
     import yaml
-    print ' --- Simulation Parameters --- \n \n'
+    print '\n --- Simulation Parameters --- \n'
     print(yaml.dump(prms))
