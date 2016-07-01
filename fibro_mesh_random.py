@@ -23,13 +23,17 @@ def generate_mesh(prms):
     base    = float(prms['mesh']['base'])
     altura  = float(prms['mesh']['altura'])
     desp    = float(prms['mesh']['desp'])
+    is_random =     prms['mesh']['random']   
+    if not is_random:
+        theta_c_local, theta_f_local =  prms['mesh']['theta_c'],  prms['mesh']['theta_f']
+
     sigma   = 2
     l_coarse = 0.5
-    l_unrefine		= 1 # mesh size in coarser parts of the mesh
+    l_unrefine		= 1.5 # mesh size in coarser parts of the mesh
     geom = pg.Geometry()
 
     X = [[0.0, 0.0, 0.0], [base + b*desp, 0.0, 0.0], [base + b*desp, altura + 2*a*desp, 0.0], [0.0, altura + 2*a*desp, 0.0]];
-    surface_id = geom.add_polygon(X, l_coarse, holes=None)
+    surface_id = geom.add_polygon(X, l_coarse/5, holes=None)
 
     # save array with local values of theta in order to create theta functions
     theta_c_array = np.empty((int(np.floor(base/b))*int(np.floor(altura/a)))); kkk = 0
@@ -41,12 +45,14 @@ def generate_mesh(prms):
     for Px in range(0, int(np.floor(base/b))):
         for Py in range(0, int(np.floor(altura/a))):
 
-            # randomly generate fraction of fibrotic tissue, in realistic ranges
-            theta_c_local, theta_f_local = 2, 2
-            while (theta_c_local > 0.4 or theta_c_local < 0.2):
-              theta_c_local = abs(np.random.normal(0.0, sigma))
-            while (theta_f_local < 0.4 or theta_f_local > 0.8):
-              theta_f_local = abs(np.random.normal(0.0, sigma))
+            if is_random:
+                # randomly generate fraction of fibrotic tissue, in realistic ranges
+                theta_c_local, theta_f_local = 2, 2
+                while (theta_c_local > 0.4 or theta_c_local < 0.2):
+                  theta_c_local = abs(np.random.normal(0.0, sigma))
+                while (theta_f_local < 0.4 or theta_f_local > 0.8):
+                  theta_f_local = abs(np.random.normal(0.0, sigma))
+
 
             Pxx, Pyy = float(Px*b - b*theta_f_local/2 + b*desp), float(Py*a - a*theta_c_local/2 + a*desp)
             x1 = [Pxx,        		        Pyy, 				        0.0];
@@ -94,7 +100,10 @@ def generate_mesh(prms):
     geom.set_physical_objects(collagen_subdomain)
     
     # Save mesh and convert to .h5 format
-    out_name = 'random_fibro_' + str(int(base)) + "x" + str(int(altura)) + "_" + str(int(a*10)) + "_" + str(int(b*10))
+    if is_random:
+        out_name = 'random_fibro_' + str(int(base)) + "x" + str(int(altura)) + "_" + str(int(a*10)) + "_" + str(int(b*10))
+    else:
+        out_name = 'fibro_'    + str(int(base)) + "x" + str(int(altura)) + "_" + str(int(a*10)) + "_" + str(int(b*10)) + '_' + str(int(theta_c_local*100)) + '_' + str(int(theta_f_local*100))
     utils.trymkdir(prms['io']['results'])
     FILE = open("./fibro_file.geo", 'w+')
     FILE.write(geom.get_code()); FILE.close();
@@ -107,7 +116,7 @@ def generate_mesh(prms):
     # ======== CREATE MESH FOR HOMOGENIZED PROBLEM =========    
     geom = pg.Geometry()
     X = [[0.0, 0.0, 0.0], [base + b*desp, 0.0, 0.0], [base + b*desp, altura + 2*a*desp, 0.0], [0.0, altura + 2*a*desp, 0.0]];
-    surface_id = geom.add_polygon(X, l_coarse/5, holes=None)
+    surface_id = geom.add_polygon(X, l_coarse/3, holes=None)
     geom.set_physical_objects_homo()
     # Save mesh and convert to .h5 format
     out_name = 'homogenized_' + str(int(base)) + "x" + str(int(altura))
@@ -124,20 +133,33 @@ def generate_mesh(prms):
     mesh, subdomains, boundaries = readmesh('./meshes/' + out_name + '.h5')
 
     V = FunctionSpace(mesh, 'CG', 1)
-    theta_c_function, theta_f_function = Function(V), Function(V); kkk = 0
+    theta_c_function, theta_f_function = Function(V), Function(V); kkk = 0; 
 
-    # mesh dimension and dofmap
-    gdim = mesh.geometry().dim()
     dofmap = V.dofmap(); dofs = dofmap.dofs()
 
-    # Get coordinates of the dofs
-    dofs_coor = dofmap.tabulate_all_coordinates(mesh).reshape((-1, gdim))
+#    OLD for version 1.6
+#    # mesh dimension and dofmap
+#    gdim = mesh.geometry().dim()
+#    #Get coordinates of the dofs
+#    dofs_coor = dofmap.tabulate_all_coordinates(mesh).reshape((-1, gdim)) DEPRECATED AFTER 1.6 VERSION
+#    for Px in range(0, int(np.floor(base/b))):
+#        for Py in range(0, int(np.floor(altura/a))):
+#            Pxx, Pyy = float(Px*b + b*desp - b/2), float(Py*a + a*desp - a/2)
+#            for dof, dof_coor in zip(dofs, dofs_coor):
+#                if (dof_coor[0] >= Pxx and dof_coor[0] < Pxx + b) and (dof_coor[1] >= Pyy and dof_coor[1] < Pyy + a):
+#                    theta_c_function.vector()[dof], theta_f_function.vector()[dof] = theta_c_array[kkk], theta_f_array[kkk]
+#            kkk = kkk + 1
+
+    #   Get coordinates of the dofs
+    dofs_coor   = V.tabulate_dof_coordinates()
 
     for Px in range(0, int(np.floor(base/b))):
         for Py in range(0, int(np.floor(altura/a))):
             Pxx, Pyy = float(Px*b + b*desp - b/2), float(Py*a + a*desp - a/2)
-            for dof, dof_coor in zip(dofs, dofs_coor):
-                if (dof_coor[0] >= Pxx and dof_coor[0] < Pxx + b) and (dof_coor[1] >= Pyy and dof_coor[1] < Pyy + a):
+            sss = 0
+            for dof in dofs:
+                dof_x, dof_y = dofs_coor[sss], dofs_coor[sss + 1]; sss = sss + 2
+                if (dof_x >= Pxx and dof_x < Pxx + b) and (dof_y >= Pyy and dof_y < Pyy + a):
                     theta_c_function.vector()[dof], theta_f_function.vector()[dof] = theta_c_array[kkk], theta_f_array[kkk]
             kkk = kkk + 1
 
