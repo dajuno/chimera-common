@@ -116,7 +116,7 @@ def generate_mesh(prms):
     # ======== CREATE MESH FOR HOMOGENIZED PROBLEM =========    
     geom = pg.Geometry()
     X = [[0.0, 0.0, 0.0], [base + b*desp, 0.0, 0.0], [base + b*desp, altura + 2*a*desp, 0.0], [0.0, altura + 2*a*desp, 0.0]];
-    surface_id = geom.add_polygon(X, l_coarse/3, holes=None)
+    surface_id = geom.add_polygon(X, l_coarse/5, holes=None)
     geom.set_physical_objects_homo()
     # Save mesh and convert to .h5 format
     out_name = 'homogenized_' + str(int(base)) + "x" + str(int(altura))
@@ -137,7 +137,7 @@ def generate_mesh(prms):
 
     dofmap = V.dofmap(); dofs = dofmap.dofs()
 
-#    OLD for version 1.6
+#    THE FOLLOWING CODE IS DEPRECATED BEFORE 1.6 VERSION
 #    # mesh dimension and dofmap
 #    gdim = mesh.geometry().dim()
 #    #Get coordinates of the dofs
