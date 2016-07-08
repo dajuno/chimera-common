@@ -91,9 +91,9 @@ def generate_efective_tensor(prms, subdomains, theta_c, theta_f, dofs, Deff, Def
     print '\r100 % [COMPLETE]'
 
     # diffusion tensors UFL versions
-    Dh	    = Constant(((sigma_1,      0),					
-                     (0,      sigma_2))) 	
-    Dcol    = Constant(((sigma_c  , 0.0,),		
+    Dh	    = Constant(((sigma_1,      0),	
+                     (0,      sigma_2)))
+    Dcol    = Constant(((sigma_c  , 0.0,),
                      (0.0,    sigma_c)))
     # Assign tensors where they belongs
     C = DiscontinuousTensor(subdomains, [Dh, Dcol])
