@@ -127,7 +127,7 @@ def generate_mesh(prms):
     # ======== CREATE MESH FOR HOMOGENIZED PROBLEM =========    
     geom = pg.Geometry()
     X = [[0.0, 0.0, 0.0], [base + 2*b*desp, 0.0, 0.0], [base + 2*b*desp, altura + 2*a*desp, 0.0], [0.0, altura + 2*a*desp, 0.0]];
-    surface_id = geom.add_polygon(X, l_coarse*2, holes=None)
+    surface_id = geom.add_polygon(X, l_coarse, holes=None)
     geom.set_physical_objects_homo()
     # Save mesh and convert to .h5 format
     out_name = 'homogenized_' + str(int(base)) + "x" + str(int(altura))
