@@ -6,6 +6,11 @@ def read_mesh(mesh_file):
 
     Args:
         mesh_file       path to mesh file
+
+    Returns:
+        mesh            Mesh
+        sd              subdomains
+        bnd             boundaries
     '''
     # TODO: exceptions, files exist?
     from dolfin import Mesh, MeshFunction, CellFunction, HDF5File, \
@@ -112,3 +117,4 @@ def print_parameters(prms):
     '''
     import yaml
     print(yaml.dump(prms))
+    pass
