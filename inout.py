@@ -1,34 +1,46 @@
 ''' input/output module '''
 
 
-def readmesh(mesh_file):
-    ''' read HDF5 or DOLFIN XML mesh '''
+def read_mesh(mesh_file):
+    ''' Read HDF5 or DOLFIN XML mesh.
+
+    Args:
+        mesh_file       path to mesh file
+
+    Returns:
+        mesh            Mesh
+        sd              subdomains
+        bnd             boundaries
+    '''
     # TODO: exceptions, files exist?
     from dolfin import Mesh, MeshFunction, CellFunction, HDF5File, \
         FacetFunction
-    tmp = mesh_file.split('/')[-1].split('.')
+    # pth = '/'.join(mesh_file.split('/')[0:-1])
+    tmp = mesh_file.split('.')  # [-1].split('.')
     mesh_type = tmp[-1]
-    mesh_name = '.'.join(tmp[0:-1])
+    mesh_pref = '.'.join(tmp[0:-1])
+
     if mesh_type == 'xml':
         mesh = Mesh(mesh_file)
 #        rank = mesh.mpi_comm().Get_rank()
         rank = 0
         try:
             subdomains = MeshFunction("size_t", mesh,
-                                      mesh_name+"_physical_region.xml")
+                                      mesh_pref+"_physical_region.xml")
         except:
-	    if rank == 0:
-	      print('no subdomain file found (%s)' %
-		    (mesh_name+"_physical_region.xml"))
+            # if rank == 0:
+            #     print('no subdomain file found (%s)' %
+            #           (mesh_pref+"_physical_region.xml"))
             subdomains = CellFunction("size_t", mesh)
         try:
             boundaries = MeshFunction("size_t", mesh,
-                                      mesh_name+"_facet_region.xml")
+                                      mesh_pref+"_facet_region.xml")
         except:
-	    if rank == 0:
-	      print('no boundary file found (%s)' %
-		    (mesh_name+"_physical_region.xml"))
+            if rank == 0:
+                print('no boundary file found (%s)' %
+                      (mesh_pref+"_facet_region.xml"))
             boundaries = FacetFunction("size_t", mesh)
+
     elif mesh_type == 'h5':
         mesh = Mesh()
 #        rank = mesh.mpi_comm().Get_rank()
@@ -40,14 +52,16 @@ def readmesh(mesh_file):
         boundaries = FacetFunction("size_t", mesh)
         if hdf.has_dataset('subdomains'):
             hdf.read(subdomains, "/subdomains")
-        else:
-	    if rank == 0:
-	      print('no <subdomains> datasets found in file %s' % mesh_file)
+        # else:
+        #     if rank == 0:
+        #         print('no <subdomains> datasets found in file %s' %
+        #               mesh_file)
         if hdf.has_dataset('boundaries'):
             hdf.read(boundaries, "/boundaries")
         else:
-	    if rank == 0:
-	      print('no <boundaries> datasets found in file %s' % mesh_file)
+            if rank == 0:
+                print('no <boundaries> datasets found in file %s' %
+                      mesh_file)
 
     elif mesh_type in ['xdmf', 'xmf']:
         import sys
@@ -61,7 +75,26 @@ def readmesh(mesh_file):
     return mesh, subdomains, boundaries
 
 
+def readmesh(mesh_file):
+    ''' Deprecated function. Use read_mesh instead.'''
+    raise Exception('readmesh was renamed to read_mesh (PEP8 conforming).')
+
+
 def prms_load(infile):
+    ''' Deprecated function. Use read_parameters instead.'''
+    raise Exception('prms_load was renamed to read_parameters (PEP8 '
+                    'conforming).')
+
+
+def read_parameters(infile):
+    ''' Read in parameters yaml file.
+
+    Args:
+        infile      path to yaml file
+
+    Return:
+        prms        parameters dictionary
+    '''
     import yaml
     try:
         with open(infile, 'r+') as f:
@@ -74,6 +107,17 @@ def prms_load(infile):
 
 
 def prms_print(prms):
+    ''' Deprecated function. Use print_parameters instead.'''
+    raise Exception('prms_print was renamed to print_parameters (PEP8 '
+                    'conforming).')
+
+
+def print_parameters(prms):
+    ''' Print parameter dictionary in human readable form.
+
+    Args:
+        prms        parameters dictionary
+    '''
     import yaml
-    print '\n --- Simulation Parameters --- \n'
     print(yaml.dump(prms))
+    pass

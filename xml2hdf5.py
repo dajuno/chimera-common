@@ -10,8 +10,9 @@ def _main():
     args = _parse_options()
 
     fin = args.infile
+
     tmp = fin.split('.')
-    fname = ''.join(tmp[0:len(tmp)-1])
+    fname = '.'.join(tmp[0:len(tmp)-1])
     ftype = tmp[-1]
 
     # check if file has the right format
@@ -51,15 +52,9 @@ def _parse_options():
     '''Parse input options.'''
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description='Convert XML to HDF5.'
-        )
+    parser = argparse.ArgumentParser(description='Convert XML to HDF5.')
 
-    parser.add_argument(
-        'infile',
-        type=str,
-        help='.xml file to be read from'
-        )
+    parser.add_argument('infile', type=str, help='.xml file to be read from')
 
     # parser.add_argument(
     #     'outfile',
