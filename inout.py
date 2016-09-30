@@ -1,5 +1,37 @@
 ''' input/output module '''
 
+def read_HDF5_data(h5file, mpi_comm, fun, name):
+    ''' Read checkpoint data from a HDF5 file into a dolfin function.
+
+    Args:
+        h5file (str)    HDF5 File to be read from
+        mpi_comm        MPI comm, e.g. mesh.mpi_comm()
+        fun             Dolfin function
+        name (str)      name of the hdf5 dataset
+    '''
+    from dolfin import HDF5File
+    hdf = HDF5File(mpi_comm, h5file, "r")
+    hdf.read(fun, name)
+    hdf.close()
+    pass
+
+
+def write_HDF5_data(h5file, mpi_comm, fun, name):
+    ''' Write checkpoint data from a dolfin function into a HDF5 file for
+    reuse.
+
+    Args:
+        h5file (str)    HDF5 File to be read from
+        mpi_comm        MPI comm, e.g. mesh.mpi_comm()
+        fun             Dolfin function
+        name (str)      name of the hdf5 dataset
+    '''
+    from dolfin import HDF5File
+    hdf = HDF5File(mpi_comm, h5file, "w")
+    hdf.write(fun, name)
+    hdf.close()
+    pass
+
 
 def read_mesh(mesh_file):
     ''' Read HDF5 or DOLFIN XML mesh.
