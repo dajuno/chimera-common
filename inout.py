@@ -1,5 +1,6 @@
 ''' input/output module '''
 
+
 def read_HDF5_data(h5file, mpi_comm, fun, name):
     ''' Read checkpoint data from a HDF5 file into a dolfin function.
 
