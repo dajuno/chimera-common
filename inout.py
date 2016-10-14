@@ -13,11 +13,15 @@ def read_HDF5_data(h5file, mpi_comm, fun, name):
     from dolfin import HDF5File
     hdf = HDF5File(mpi_comm, h5file, "r")
     hdf.read(fun, name)
+    time = 0
+    if hdf.attributes(name + '/vector_0').exists('timestamp'):
+        time = hdf.attributes('/w/vector_0').to_dict()['timestamp']
+
     hdf.close()
-    pass
+    return time
 
 
-def write_HDF5_data(h5file, mpi_comm, fun, name):
+def write_HDF5_data(h5file, mpi_comm, fun, name, t=0.0):
     ''' Write checkpoint data from a dolfin function into a HDF5 file for
     reuse.
 
@@ -29,7 +33,7 @@ def write_HDF5_data(h5file, mpi_comm, fun, name):
     '''
     from dolfin import HDF5File
     hdf = HDF5File(mpi_comm, h5file, "w")
-    hdf.write(fun, name)
+    hdf.write(fun, name, t)
     hdf.close()
     pass
 
