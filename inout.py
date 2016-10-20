@@ -9,6 +9,9 @@ def read_HDF5_data(h5file, mpi_comm, fun, name):
         mpi_comm        MPI comm, e.g. mesh.mpi_comm()
         fun             Dolfin function
         name (str)      name of the hdf5 dataset
+
+    Returns:
+        time            timestamp if solution, 0 if none given
     '''
     from dolfin import HDF5File
     hdf = HDF5File(mpi_comm, h5file, "r")
