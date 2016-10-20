@@ -108,17 +108,6 @@ def read_mesh(mesh_file):
     return mesh, subdomains, boundaries
 
 
-def readmesh(mesh_file):
-    ''' Deprecated function. Use read_mesh instead.'''
-    raise Exception('readmesh was renamed to read_mesh (PEP8 conforming).')
-
-
-def prms_load(infile):
-    ''' Deprecated function. Use read_parameters instead.'''
-    raise Exception('prms_load was renamed to read_parameters (PEP8 '
-                    'conforming).')
-
-
 def read_parameters(infile):
     ''' Read in parameters yaml file.
 
@@ -137,12 +126,6 @@ def read_parameters(infile):
         import sys
         sys.exit('error: file not found: %s' % infile)
     return prms
-
-
-def prms_print(prms):
-    ''' Deprecated function. Use print_parameters instead.'''
-    raise Exception('prms_print was renamed to print_parameters (PEP8 '
-                    'conforming).')
 
 
 def print_parameters(prms):
