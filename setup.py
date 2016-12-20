@@ -2,7 +2,7 @@ import os
 from distutils.core import setup
 from codecs import open
 
-from navierstokes import __version__
+from common import __version__
 
 '''
     Install with
