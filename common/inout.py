@@ -103,12 +103,15 @@ def read_mesh(mesh_file):
                 print('no <boundaries> datasets found in file %s' %
                       mesh_file)
 
+        hdf5.close()
+
     elif mesh_type in ['xdmf', 'xmf']:
         import sys
         sys.exit('XDMF not supported yet. Use HDF5 instead!')
     else:
         import sys
         sys.exit('mesh format not recognized. try XML (serial) or HDF5')
+
 
 # NOTE http://fenicsproject.org/qa/5337/importing-marked-mesh-for-parallel-use
     # see file xml2xdmf.py
