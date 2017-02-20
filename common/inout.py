@@ -103,7 +103,7 @@ def read_mesh(mesh_file):
                 print('no <boundaries> datasets found in file %s' %
                       mesh_file)
 
-        hdf5.close()
+        hdf.close()
 
     elif mesh_type in ['xdmf', 'xmf']:
         import sys
