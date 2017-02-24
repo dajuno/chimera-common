@@ -138,6 +138,12 @@ def read_parameters(infile):
     return prms
 
 
+def dump_parameters(prms):
+    ''' Wrapper for yaml.dump (e.g., for logging.debug()) '''
+    import yaml
+    return yaml.dump(prms)
+
+
 def print_parameters(prms):
     ''' Print parameter dictionary in human readable form.
 
