@@ -1,5 +1,8 @@
 ''' utils module
-    for functions of general use and utility'''
+    for functions of general use and utility
+'''
+import git
+import os
 import shutil
 
 
@@ -35,3 +38,17 @@ def trymkdir(path):
         if not os.path.isdir(path):
             raise
 
+
+def get_git_rev_hash(path):
+    ''' Get the rev hash of the git repository that 'path' (a file or
+    directory) is located in.
+
+    Args:
+        path    directory or file inside a git repository
+
+    Returns:
+        hex_sha of HEAD
+    '''
+    git_repo = git.Repo(os.path.dirname(os.path.realpath(path)),
+                        search_parent_directories=True)
+    return git_repo.head.object.name_rev
