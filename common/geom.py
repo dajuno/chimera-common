@@ -94,8 +94,11 @@ class Bottom(SubDomain):
         return x[1] < self.L + DOLFIN_EPS and on_boundary
 
 
-class Corner(SubDomain):
-    ''' Right lower corner of the mesh '''
+class Point(SubDomain):
+    ''' Point subdomain class.
+    Args:
+        xp      coordinates of the point (x, y(, z))
+    '''
     def __init__(self, xp):
         self.xp = xp
         SubDomain.__init__(self)  # Call base class constructor!
