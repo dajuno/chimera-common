@@ -4,6 +4,24 @@
 import git
 import os
 import shutil
+import dolfin
+import ufl
+
+
+def is_enriched(V):
+    ''' Check if the given (sub) function space has enriched elements. '''
+    return isinstance(V.ufl_element(),
+                      ufl.finiteelement.enrichedelement.EnrichedElement)
+
+
+def is_Expression(obj):
+    ''' Check if object has type dolfin Expression '''
+    return isinstance(obj, dolfin.functions.expression.Expression)
+
+
+def is_Constant(obj):
+    ''' Check if object has type dolfin Constant '''
+    return isinstance(obj, dolfin.functions.constant.Constant)
 
 
 def on_cluster():
