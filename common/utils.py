@@ -9,7 +9,10 @@ import ufl
 
 
 def is_enriched(V):
-    ''' Check if the given (sub) function space has enriched elements. '''
+    ''' Check if the given function space or sub function space has enriched
+    elements. '''
+    while V.num_sub_spaces():
+        V = V.sub(0)
     return isinstance(V.ufl_element(),
                       ufl.finiteelement.enrichedelement.EnrichedElement)
 
