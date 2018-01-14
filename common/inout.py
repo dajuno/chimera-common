@@ -130,7 +130,7 @@ def read_parameters(infile):
     import ruamel.yaml as yaml
     try:
         with open(infile, 'r+') as f:
-            prms = yaml.load(f, Loader=ruamel.yaml.Loader)
+            prms = yaml.load(f, Loader=yaml.Loader)
             f.close()
     except IOError:
         import sys
