@@ -127,7 +127,7 @@ def read_parameters(infile):
     Return:
         prms        parameters dictionary
     '''
-    import yaml
+    import ruamel.yaml as yaml
     try:
         with open(infile, 'r+') as f:
             prms = yaml.load(f)
@@ -140,7 +140,7 @@ def read_parameters(infile):
 
 def dump_parameters(prms):
     ''' Wrapper for yaml.dump (e.g., for logging.debug()) '''
-    import yaml
+    import ruamel.yaml as yaml
     return yaml.dump(prms)
 
 
@@ -150,6 +150,6 @@ def print_parameters(prms):
     Args:
         prms        parameters dictionary
     '''
-    import yaml
+    import ruamel.yaml as yaml
     print(yaml.dump(prms))
     pass
