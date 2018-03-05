@@ -53,8 +53,7 @@ def read_mesh(mesh_file):
         bnd             boundaries
     '''
     # TODO: exceptions, files exist?
-    from dolfin import Mesh, MeshFunction, CellFunction, HDF5File, \
-        FacetFunction
+    from dolfin import Mesh, MeshFunction, HDF5File
     # pth = '/'.join(mesh_file.split('/')[0:-1])
     tmp = mesh_file.split('.')  # [-1].split('.')
     mesh_type = tmp[-1]
@@ -67,19 +66,22 @@ def read_mesh(mesh_file):
         try:
             subdomains = MeshFunction("size_t", mesh,
                                       mesh_pref+"_physical_region.xml")
-        except:
+        except FileNotFoundError:
             # if rank == 0:
             #     print('no subdomain file found (%s)' %
             #           (mesh_pref+"_physical_region.xml"))
-            subdomains = CellFunction("size_t", mesh)
+            subdomains = MeshFunction("size_t", mesh)
+
         try:
             boundaries = MeshFunction("size_t", mesh,
+                                      mesh.topology().dim() - 1,
                                       mesh_pref+"_facet_region.xml")
-        except:
+        except FileNotFoundError:
             if rank == 0:
                 print('no boundary file found (%s)' %
                       (mesh_pref+"_facet_region.xml"))
-            boundaries = FacetFunction("size_t", mesh)
+            boundaries = MeshFunction("size_t", mesh,
+                                      mesh.topology().dim() - 1)
 
     elif mesh_type == 'h5':
         mesh = Mesh()
@@ -88,8 +90,8 @@ def read_mesh(mesh_file):
 
         hdf = HDF5File(mesh.mpi_comm(), mesh_file, "r")
         hdf.read(mesh, "/mesh", False)
-        subdomains = CellFunction("size_t", mesh)
-        boundaries = FacetFunction("size_t", mesh)
+        subdomains = MeshFunction("size_t", mesh)
+        boundaries = MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
         if hdf.has_dataset('subdomains'):
             hdf.read(subdomains, "/subdomains")
         # else:
