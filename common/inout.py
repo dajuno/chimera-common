@@ -1,7 +1,7 @@
 ''' input/output module '''
 
 
-def read_HDF5_data(h5file, mpi_comm, fun, name):
+def read_HDF5_data(mpi_comm, h5file, fun, name):
     ''' Read checkpoint data from a HDF5 file into a dolfin function.
 
     Args:
@@ -24,7 +24,7 @@ def read_HDF5_data(h5file, mpi_comm, fun, name):
     return time
 
 
-def write_HDF5_data(h5file, mpi_comm, fun, name, t=0.0):
+def write_HDF5_data(mpi_comm, h5file, fun, name, t=0.0):
     ''' Write checkpoint data from a dolfin function into a HDF5 file for
     reuse.
 
@@ -38,7 +38,6 @@ def write_HDF5_data(h5file, mpi_comm, fun, name, t=0.0):
     hdf = HDF5File(mpi_comm, h5file, "w")
     hdf.write(fun, name, t)
     hdf.close()
-    pass
 
 
 def read_mesh(mesh_file):
@@ -70,7 +69,8 @@ def read_mesh(mesh_file):
             # if rank == 0:
             #     print('no subdomain file found (%s)' %
             #           (mesh_pref+"_physical_region.xml"))
-            subdomains = MeshFunction("size_t", mesh)
+            subdomains = MeshFunction("size_t", mesh,
+                                      mesh.topology().dim())
 
         try:
             boundaries = MeshFunction("size_t", mesh,
@@ -90,7 +90,7 @@ def read_mesh(mesh_file):
 
         hdf = HDF5File(mesh.mpi_comm(), mesh_file, "r")
         hdf.read(mesh, "/mesh", False)
-        subdomains = MeshFunction("size_t", mesh)
+        subdomains = MeshFunction("size_t", mesh, mesh.topology().dim())
         boundaries = MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
         if hdf.has_dataset('subdomains'):
             hdf.read(subdomains, "/subdomains")
