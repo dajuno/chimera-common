@@ -5,7 +5,7 @@ from dolfin import *
 import os.path
 
 
-def _main():
+def main():
     # Parse command line arguments.
     args = _parse_options()
 
@@ -66,4 +66,4 @@ def _parse_options():
 
 
 if __name__ == '__main__':
-    _main()
+    main()
