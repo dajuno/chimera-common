@@ -29,21 +29,31 @@ def main():
 
     # write mesh
     print('write HDF5 mesh '+fname+'.h5')
-    hdf = HDF5File(mesh.mpi_comm(), fname+".h5", "w")
-    hdf.write(mesh, "/mesh")
+    hdf = HDF5File(mesh.mpi_comm(), fname+'.h5', 'w')
+    hdf.write(mesh, '/mesh')
 
     # if files exist, write subdomain and boundary information
     print('look for boundaries and subdomains')
     subdomains = None
     boundaries = None
-    if os.path.isfile(fname+"_physical_region.xml"):
+    if os.path.isfile(fname+'_physical_region.xml'):
         print('write subdomains to '+fname+'.h5')
-        subdomains = MeshFunction("size_t", mesh, fname+"_physical_region.xml")
-        hdf.write(subdomains, "/subdomains")
-    if os.path.isfile(fname+"_facet_region.xml"):
+        try:
+            subdomains = MeshFunction('size_t', mesh,
+                                      fname+'_physical_region.xml')
+        except RuntimeError:
+            subdomains = MeshFunction('int', mesh,
+                                      fname+'_physical_region.xml')
+        hdf.write(subdomains, '/subdomains')
+
+    if os.path.isfile(fname+'_facet_region.xml'):
         print('write boundaries to '+fname+'.h5')
-        boundaries = MeshFunction("size_t", mesh, fname+"_facet_region.xml")
-        hdf.write(boundaries, "/boundaries")
+        try:
+            boundaries = MeshFunction('size_t', mesh,
+                                      fname+'_facet_region.xml')
+        except RuntimeError:
+            boundaries = MeshFunction('int', mesh, fname+'_facet_region.xml')
+        hdf.write(boundaries, '/boundaries')
 
     return
 
