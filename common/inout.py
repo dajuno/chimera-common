@@ -63,24 +63,31 @@ def read_mesh(mesh_file):
 #        rank = mesh.mpi_comm().Get_rank()
         rank = 0
         try:
-            subdomains = MeshFunction("size_t", mesh,
-                                      mesh_pref+"_physical_region.xml")
+            subdomains = MeshFunction('size_t', mesh,
+                                      mesh_pref+'_physical_region.xml')
+        except RuntimeError:
+            subdomains = MeshFunction('int', mesh,
+                                      mesh_pref+'_physical_region.xml')
         except FileNotFoundError:
             # if rank == 0:
             #     print('no subdomain file found (%s)' %
-            #           (mesh_pref+"_physical_region.xml"))
-            subdomains = MeshFunction("size_t", mesh,
+            #           (mesh_pref+'_physical_region.xml'))
+            subdomains = MeshFunction('size_t', mesh,
                                       mesh.topology().dim())
 
         try:
-            boundaries = MeshFunction("size_t", mesh,
+            boundaries = MeshFunction('size_t', mesh,
                                       mesh.topology().dim() - 1,
-                                      mesh_pref+"_facet_region.xml")
+                                      mesh_pref+'_facet_region.xml')
+        except RuntimeError:
+            boundaries = MeshFunction('int', mesh,
+                                      mesh.topology().dim() - 1,
+                                      mesh_pref+'_facet_region.xml')
         except FileNotFoundError:
             if rank == 0:
                 print('no boundary file found (%s)' %
-                      (mesh_pref+"_facet_region.xml"))
-            boundaries = MeshFunction("size_t", mesh,
+                      (mesh_pref+'_facet_region.xml'))
+            boundaries = MeshFunction('size_t', mesh,
                                       mesh.topology().dim() - 1)
 
     elif mesh_type == 'h5':
@@ -88,18 +95,18 @@ def read_mesh(mesh_file):
 #        rank = mesh.mpi_comm().Get_rank()
         rank = 0
 
-        hdf = HDF5File(mesh.mpi_comm(), mesh_file, "r")
-        hdf.read(mesh, "/mesh", False)
-        subdomains = MeshFunction("size_t", mesh, mesh.topology().dim())
-        boundaries = MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
+        hdf = HDF5File(mesh.mpi_comm(), mesh_file, 'r')
+        hdf.read(mesh, '/mesh', False)
+        subdomains = MeshFunction('size_t', mesh, mesh.topology().dim())
+        boundaries = MeshFunction('size_t', mesh, mesh.topology().dim() - 1)
         if hdf.has_dataset('subdomains'):
-            hdf.read(subdomains, "/subdomains")
+            hdf.read(subdomains, '/subdomains')
         # else:
         #     if rank == 0:
         #         print('no <subdomains> datasets found in file %s' %
         #               mesh_file)
         if hdf.has_dataset('boundaries'):
-            hdf.read(boundaries, "/boundaries")
+            hdf.read(boundaries, '/boundaries')
         else:
             if rank == 0:
                 print('no <boundaries> datasets found in file %s' %
