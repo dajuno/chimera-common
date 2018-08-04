@@ -77,11 +77,11 @@ def read_mesh(mesh_file):
 
         try:
             boundaries = MeshFunction('size_t', mesh,
-                                      mesh.topology().dim() - 1,
+                                      # mesh.topology().dim() - 1,
                                       mesh_pref+'_facet_region.xml')
         except RuntimeError:
             boundaries = MeshFunction('int', mesh,
-                                      mesh.topology().dim() - 1,
+                                      # mesh.topology().dim() - 1,
                                       mesh_pref+'_facet_region.xml')
         except FileNotFoundError:
             if rank == 0:

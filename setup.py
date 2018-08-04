@@ -37,6 +37,6 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'xml2hdf5 = common.xml2hdf5:main']
+            'xml2hdf5 = common.xml2hdf5:convert']
     }
 )
