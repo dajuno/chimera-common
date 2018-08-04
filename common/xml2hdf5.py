@@ -5,71 +5,88 @@ from dolfin import *
 from pathlib import Path
 
 
-def convert():
-    # Parse command line arguments.
-    args = _parse_options()
+def convert(infile):
+    ''' Convert XML to HDF5, including boundary and subdomain tags.
 
-    fin = Path(args.infile)
+    Args:
+        infile      XML mesh file to be converted
+    '''
+    fin = Path(infile)
 
-    # tmp = fin.split('.')
-    # fname = '.'.join(tmp[0:len(tmp)-1])
-    # ftype = tmp[-1]
-    # ftype = fin.suffix
-
-    # check if file has the right format
-    if not fin.suffix == '.xml':
-        raise Exception('Expected mesh file with .xml extension, got '
-                        + fin.suffix)
-        # print('input file is not in XML format')
-        # return -1
-    # if not os.path.isfile(fin):
-    #     print('file not found')
-    #     return -1
     try:
         fin.resolve()
     except FileNotFoundError:
         raise
 
+    if not fin.suffix == '.xml':
+        raise Exception('Expected mesh file with .xml extension, got {}'.
+                        format(fin.suffix))
+
     # read mesh
-    print('reading DOLFIN mesh ' + fin)
-    mesh = Mesh(fin)
+    print('reading DOLFIN mesh {}'.format(fin))
+    mesh = Mesh(str(fin))
 
     # write mesh
-    print('writing HDF5 mesh ' + fname + '.h5')
-    hdf = HDF5File(mesh.mpi_comm(), fname+".h5", "w")
-    hdf.write(mesh, "/mesh")
+    fout = fin.parent / (fin.stem + '.h5')
+    print('writing HDF5 mesh {}'.format(fout))
+    hdf5 = HDF5File(mesh.mpi_comm(), str(fout), 'w')
+    hdf5.write(mesh, '/mesh')
 
     # if files exist, write subdomain and boundary information
-    print('look for boundaries and subdomains')
     subdomains = None
     boundaries = None
-    if os.path.isfile(fname+"_physical_region.xml"):
-        print('write subdomains to '+fname+'.h5')
-        subdomains = MeshFunction("size_t", mesh, fname+"_physical_region.xml")
-        hdf.write(subdomains, "/subdomains")
-    if os.path.isfile(fname+"_facet_region.xml"):
-        print('write boundaries to '+fname+'.h5')
-        boundaries = MeshFunction("size_t", mesh, fname+"_facet_region.xml")
-        hdf.write(boundaries, "/boundaries")
 
-    return
+    try:
+        fin_subdomains = fin.parent / (fin.stem + '_physical_region.xml')
+        fin_subdomains.resolve()
+
+        # size_t for dolfin-convert, int for meshio-convert
+        try:
+            subdomains = MeshFunction('size_t', mesh, str(fin_subdomains))
+        except RuntimeError:
+            subdomains = MeshFunction('int', mesh, str(fin_subdomains))
+
+        print('writing subdomain tags')
+        hdf5.write(subdomains, '/subdomains')
+
+    except FileNotFoundError:
+        print('no subdomain tags found')
+
+    try:
+        fin_boundaries = fin.parent / (fin.stem + '_facet_region.xml')
+        fin_boundaries.resolve()
+
+        # size_t for dolfin-convert, int for meshio-convert
+        try:
+            boundaries = MeshFunction('size_t', mesh, str(fin_boundaries))
+        except RuntimeError:
+            boundaries = MeshFunction('int', mesh, str(fin_boundaries))
+
+        print('writing boundary tags')
+        hdf5.write(boundaries, '/boundaries')
+
+    except FileNotFoundError:
+        print('no boundary tags found')
 
 
 def _parse_options():
     '''Parse input options.'''
     import argparse
 
-    parser = argparse.ArgumentParser(description='Convert XML to HDF5.')
-
-    parser.add_argument('infile', type=str, help='.xml file to be read from')
-
-    # parser.add_argument(
-    #     'outfile',
-    #     type=str,
-    #     help='.h5 file to be written to'
-    #     )
+    parser = argparse.ArgumentParser(description='Convert DOLFIN XML to HDF5.')
+    parser.add_argument('infile', type=str, help='input .xml mesh file')
 
     return parser.parse_args()
+
+
+def _main():
+    ''' Parse command line options and call convert function '''
+    import argparse
+    parser = argparse.ArgumentParser(description='Convert DOLFIN XML to HDF5.')
+    parser.add_argument('infile', type=str, help='input .xml mesh file')
+    args = parser.parse_args()
+
+    convert(args.infile)
 
 
 if __name__ == '__main__':
