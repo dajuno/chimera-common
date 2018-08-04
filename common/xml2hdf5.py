@@ -2,33 +2,40 @@
 Convert XML mesh to HDF5 using DOLFIN
 '''
 from dolfin import *
-import os.path
+from pathlib import Path
 
 
-def _main():
+def convert():
     # Parse command line arguments.
     args = _parse_options()
 
-    fin = args.infile
+    fin = Path(args.infile)
 
-    tmp = fin.split('.')
-    fname = '.'.join(tmp[0:len(tmp)-1])
-    ftype = tmp[-1]
+    # tmp = fin.split('.')
+    # fname = '.'.join(tmp[0:len(tmp)-1])
+    # ftype = tmp[-1]
+    # ftype = fin.suffix
 
     # check if file has the right format
-    if not ftype == 'xml':
-        print('input file is not in XML format')
-        return -1
-    if not os.path.isfile(fin):
-        print('file not found')
-        return -1
+    if not fin.suffix == '.xml':
+        raise Exception('Expected mesh file with .xml extension, got '
+                        + fin.suffix)
+        # print('input file is not in XML format')
+        # return -1
+    # if not os.path.isfile(fin):
+    #     print('file not found')
+    #     return -1
+    try:
+        fin.resolve()
+    except FileNotFoundError:
+        raise
 
     # read mesh
-    print('reading DOLFIN mesh '+fin)
+    print('reading DOLFIN mesh ' + fin)
     mesh = Mesh(fin)
 
     # write mesh
-    print('write HDF5 mesh '+fname+'.h5')
+    print('writing HDF5 mesh ' + fname + '.h5')
     hdf = HDF5File(mesh.mpi_comm(), fname+".h5", "w")
     hdf.write(mesh, "/mesh")
 
