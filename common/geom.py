@@ -99,14 +99,17 @@ class Point(SubDomain):
     Args:
         xp      coordinates of the point (x, y(, z))
     '''
-    def __init__(self, xp):
+    def __init__(self, xp, tol=1e-8):
         self.xp = xp
+        self.tol = tol
         SubDomain.__init__(self)  # Call base class constructor!
 
     def inside(self, x, on_boundary):
         # don't require "on_boundary" here!
 
-        ret = (near(x[0], self.xp[0]) and near(x[1], self.xp[1]) and
-               (near(x[2], self.xp[2]) if len(self.xp) == 3 else True))
+        ret = (near(x[0], self.xp[0], self.tol) and near(x[1], self.xp[1],
+                                                         self.tol)
+               and (near(x[2], self.xp[2], self.tol) if len(self.xp) == 3 else
+                    True))
 
         return ret
