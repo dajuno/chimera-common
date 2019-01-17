@@ -32,9 +32,11 @@ setup(
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: MIT License',
-        'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7',
         'Topic :: Scientific/Engineering :: Mathematics'
     ],
+    entry_points={
+        'console_scripts': [
+            'xml2hdf5 = common.xml2hdf5:_main']
+    }
 )
