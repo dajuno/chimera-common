@@ -25,7 +25,10 @@ def is_enriched(V):
 
 def is_Expression(obj):
     ''' Check if object has type dolfin Expression '''
-    return isinstance(obj, dolfin.functions.expression.Expression)
+    if dolfin.__version__ >= '2018':
+        return isinstance(obj, dolfin.function.expression.Expression)
+    else:
+        return isinstance(obj, dolfin.functions.expression.Expression)
 
 
 def is_Constant(obj):
