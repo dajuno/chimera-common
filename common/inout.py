@@ -17,8 +17,8 @@ def read_HDF5_data(mpi_comm, h5file, fun, name):
     hdf = HDF5File(mpi_comm, h5file, 'r')
     hdf.read(fun, name)
     time = 0
-    if hdf.attributes(name + '/vector_0').exists('timestamp'):
-        time = hdf.attributes(name + '/vector_0').to_dict()['timestamp']
+    if 'timestamp' in hdf.attributes(name + '/vector_0'):
+        time = hdf.attributes(name + '/vector_0')['timestamp']
 
     hdf.close()
     return time
