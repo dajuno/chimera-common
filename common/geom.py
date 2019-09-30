@@ -99,7 +99,7 @@ class Point(SubDomain):
     Args:
         xp      coordinates of the point (x, y(, z))
     '''
-    def __init__(self, xp, tol=1-8):
+    def __init__(self, xp, tol=1e-8):
         self.xp = xp
         self.tol = tol
         SubDomain.__init__(self)  # Call base class constructor!
