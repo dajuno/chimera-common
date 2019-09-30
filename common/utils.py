@@ -12,9 +12,9 @@ def is_enriched(V):
     ''' Check if the given function space or sub function space has enriched
     elements. '''
 
-    # FIXME pybind11 hack for 2018.1.0:
-    if ('2018' in dolfin.__version__ and
-            isinstance(V, dolfin.cpp.function.FunctionSpace)):
+    # FIXME pybind11 hack for >=2018.1.0:
+    if (dolfin.__version__ >= '2018'
+            and isinstance(V, dolfin.cpp.function.FunctionSpace)):
         V = dolfin.FunctionSpace(V)
 
     while V.num_sub_spaces():
