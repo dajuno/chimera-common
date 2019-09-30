@@ -99,6 +99,7 @@ def read_mesh(mesh_file):
         hdf.read(mesh, '/mesh', False)
         subdomains = MeshFunction('size_t', mesh, mesh.topology().dim())
         boundaries = MeshFunction('size_t', mesh, mesh.topology().dim() - 1)
+
         if hdf.has_dataset('subdomains'):
             hdf.read(subdomains, '/subdomains')
         # else:
