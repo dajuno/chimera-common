@@ -33,7 +33,10 @@ def is_Expression(obj):
 
 def is_Constant(obj):
     ''' Check if object has type dolfin Constant '''
-    return isinstance(obj, dolfin.functions.constant.Constant)
+    if dolfin.__version__ >= '2018':
+        return isinstance(obj, dolfin.function.constant.Constant)
+    else:
+        return isinstance(obj, dolfin.functions.constant.Constant)
 
 
 def on_cluster():
