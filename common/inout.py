@@ -14,13 +14,13 @@ def read_HDF5_data(mpi_comm, h5file, fun, name):
         time            timestamp if solution, 0 if none given
     '''
     from dolfin import HDF5File
-    hdf = HDF5File(mpi_comm, h5file, 'r')
-    hdf.read(fun, name)
-    time = 0
-    if 'timestamp' in hdf.attributes(name + '/vector_0'):
-        time = hdf.attributes(name + '/vector_0')['timestamp']
 
-    hdf.close()
+    with HDF5File(mpi_comm, h5file, 'r') as hdf:
+        hdf.read(fun, name)
+        time = 0
+        if 'timestamp' in hdf.attributes(name + '/vector_0'):
+            time = hdf.attributes(name + '/vector_0')['timestamp']
+
     return time
 
 
@@ -35,9 +35,9 @@ def write_HDF5_data(mpi_comm, h5file, fun, name, t=0.):
         name (str)      name of the hdf5 dataset
     '''
     from dolfin import HDF5File
-    hdf = HDF5File(mpi_comm, h5file, 'w')
-    hdf.write(fun, name, float(t))
-    hdf.close()
+
+    with HDF5File(mpi_comm, h5file, 'w') as hdf:
+        hdf.write(fun, name, float(t))
 
 
 def read_mesh(mesh_file):
@@ -51,76 +51,74 @@ def read_mesh(mesh_file):
         sd              subdomains
         bnd             boundaries
     '''
-    # TODO: exceptions, files exist?
-    from dolfin import Mesh, MeshFunction, HDF5File
+    from dolfin import Mesh, MeshFunction, HDF5File, XDMFFile
     # pth = '/'.join(mesh_file.split('/')[0:-1])
     tmp = mesh_file.split('.')  # [-1].split('.')
-    mesh_type = tmp[-1]
+    file_type = tmp[-1]
     mesh_pref = '.'.join(tmp[0:-1])
 
-    if mesh_type == 'xml':
+    if file_type == 'xml':
         mesh = Mesh(mesh_file)
-#        rank = mesh.mpi_comm().Get_rank()
-        rank = 0
         try:
             subdomains = MeshFunction('size_t', mesh,
-                                      mesh_pref+'_physical_region.xml')
+                                      mesh_pref + '_physical_region.xml')
         except RuntimeError:
             subdomains = MeshFunction('int', mesh,
-                                      mesh_pref+'_physical_region.xml')
+                                      mesh_pref + '_physical_region.xml')
         except FileNotFoundError:
-            # if rank == 0:
-            #     print('no subdomain file found (%s)' %
-            #           (mesh_pref+'_physical_region.xml'))
             subdomains = MeshFunction('size_t', mesh,
                                       mesh.topology().dim())
 
         try:
             boundaries = MeshFunction('size_t', mesh,
                                       # mesh.topology().dim() - 1,
-                                      mesh_pref+'_facet_region.xml')
+                                      mesh_pref + '_facet_region.xml')
         except RuntimeError:
             boundaries = MeshFunction('int', mesh,
                                       # mesh.topology().dim() - 1,
-                                      mesh_pref+'_facet_region.xml')
+                                      mesh_pref + '_facet_region.xml')
         except FileNotFoundError:
-            if rank == 0:
-                print('no boundary file found (%s)' %
-                      (mesh_pref+'_facet_region.xml'))
+            if mesh.mpi_comm().Get_rank() == 0:
+                print('no boundary file found ({})'.format(
+                    mesh_pref+'_facet_region.xml'))
             boundaries = MeshFunction('size_t', mesh,
                                       mesh.topology().dim() - 1)
 
-    elif mesh_type == 'h5':
+    elif file_type == 'h5':
         mesh = Mesh()
-#        rank = mesh.mpi_comm().Get_rank()
-        rank = 0
 
-        hdf = HDF5File(mesh.mpi_comm(), mesh_file, 'r')
-        hdf.read(mesh, '/mesh', False)
-        subdomains = MeshFunction('size_t', mesh, mesh.topology().dim())
-        boundaries = MeshFunction('size_t', mesh, mesh.topology().dim() - 1)
+        with HDF5File(mesh.mpi_comm(), mesh_file, 'r') as hdf:
+            hdf.read(mesh, '/mesh', False)
+            subdomains = MeshFunction('size_t', mesh, mesh.topology().dim())
+            boundaries = MeshFunction('size_t', mesh, mesh.topology().dim()
+                                      - 1)
 
-        if hdf.has_dataset('subdomains'):
-            hdf.read(subdomains, '/subdomains')
-        # else:
-        #     if rank == 0:
-        #         print('no <subdomains> datasets found in file %s' %
-        #               mesh_file)
-        if hdf.has_dataset('boundaries'):
-            hdf.read(boundaries, '/boundaries')
-        else:
-            if rank == 0:
-                print('no <boundaries> datasets found in file %s' %
-                      mesh_file)
+            if hdf.has_dataset('subdomains'):
+                hdf.read(subdomains, '/subdomains')
 
-        hdf.close()
+            if hdf.has_dataset('boundaries'):
+                hdf.read(boundaries, '/boundaries')
+            else:
+                if mesh.mpi_comm().Get_rank() == 0:
+                    print('no <boundaries> datasets found in file {}'.format(
+                        mesh_file))
 
-    elif mesh_type in ['xdmf', 'xmf']:
-        import sys
-        sys.exit('XDMF not supported yet. Use HDF5 instead!')
+    elif file_type == 'xdmf':
+
+        mesh = Mesh()
+
+        with XDMFFile(mesh_file) as xf:
+            xf.read(mesh)
+            subdomains = MeshFunction('size_t', mesh, mesh.topology().dim(), 0)
+            boundaries = MeshFunction('size_t', mesh, mesh.topology().dim()
+                                      - 1, 0)
+
+            xf.read(subdomains)
+            xf.read(boundaries)
+
     else:
-        import sys
-        sys.exit('mesh format not recognized. try XML (serial) or HDF5')
+        raise Exception('Mesh format not recognized. Try XDMF or HDF5 (or XML,'
+                        ' deprecated)')
 
 
 # NOTE http://fenicsproject.org/qa/5337/importing-marked-mesh-for-parallel-use
@@ -138,13 +136,8 @@ def read_parameters(infile):
         prms        parameters dictionary
     '''
     import ruamel.yaml as yaml
-    try:
-        with open(infile, 'r+') as f:
-            prms = yaml.load(f, Loader=yaml.Loader)
-            f.close()
-    except IOError:
-        import sys
-        sys.exit('error: file not found: %s' % infile)
+    with open(infile, 'r+') as f:
+        prms = yaml.load(f, Loader=yaml.Loader)
     return prms
 
 
@@ -162,4 +155,3 @@ def print_parameters(prms):
     '''
     import ruamel.yaml as yaml
     print(yaml.dump(prms))
-    pass
