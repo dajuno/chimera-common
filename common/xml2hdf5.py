@@ -36,9 +36,8 @@ def convert(infile):
     subdomains = None
     boundaries = None
 
-    try:
-        fin_subdomains = fin.parent / (fin.stem + '_physical_region.xml')
-        fin_subdomains.resolve()
+    fin_subdomains = fin.parent / (fin.stem + '_physical_region.xml')
+    if fin_subdomains.exists():
 
         # size_t for dolfin-convert, int for meshio-convert
         try:
@@ -49,11 +48,11 @@ def convert(infile):
         print('writing subdomain tags')
         hdf5.write(subdomains, '/subdomains')
 
-    except FileNotFoundError:
+    else:
         print('no subdomain tags found')
 
-    try:
-        fin_boundaries = fin.parent / (fin.stem + '_facet_region.xml')
+    fin_boundaries = fin.parent / (fin.stem + '_facet_region.xml')
+    if fin_boundaries.exists():
         fin_boundaries.resolve()
 
         # size_t for dolfin-convert, int for meshio-convert
@@ -65,7 +64,7 @@ def convert(infile):
         print('writing boundary tags')
         hdf5.write(boundaries, '/boundaries')
 
-    except FileNotFoundError:
+    else:
         print('no boundary tags found')
 
 
