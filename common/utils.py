@@ -5,7 +5,11 @@ import git
 import os
 import shutil
 import dolfin
-import ufl
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 
 def is_enriched(V):
